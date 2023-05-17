@@ -1,0 +1,82 @@
+global:
+  storageClass: "nfs-client"
+
+resources:
+  requests:
+    memory: 4Gi
+    cpu: "2"
+
+
+containerPorts:
+  http: 30867
+  https: 30688
+
+wordpressUsername: cslab
+
+wordpressPassword: tlcb606
+
+wordpressEmail: hatake0901@icloud.com
+
+
+mariadb:
+  auth:
+    database: wordpress
+    username: cslab
+    password: "VzBkRU9IdzNaRg=="
+
+wordpressPlugins: none
+
+podSecurityContext:
+  enabled: true
+  fsGroup: 1001
+
+
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+allowOverrideNone: false
+
+htaccessPersistenceEnabled: true
+
+customPostInitScripts:
+  enable-multisite.sh: |
+    #!/bin/bash
+    cat /docker-entrypoint-init.d/.htaccess > /bitnami/wordpress/.htaccess
+    chmod -w bitnami/wordpress/wp-config.php
+  .htaccess: |
+    <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^wordpress/(.*) /$1 [L]
+    </IfModule>
+
+wordpressExtraConfigContent: |
+  define('FORCE_SSL_ADMIN', true);
+  if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && strpos( $_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false ) {
+   $_SERVER['HTTPS'] = 'on';
+  } 
+
+
+
+
+#apacheConfiguration: "AllowOverride All"
+
+
+
+#volumePermissions:
+#  enabled: true
+
+#apacheConfiguration: "a"
+
+#existingApacheConfigurationConfigMap: "httpd.conf"
+
+#image:
+  #registry: docker.io
+  #repository: bitnami/wordpress 
+  #tag: 5.0.3-debian-9-r30 # 이거 지우면 잘 됨, 버전 내려서 플러그인 돌아가는지 확인하려고 한 것
+
+##apache 2.4.18
